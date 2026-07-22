@@ -1,5 +1,7 @@
 package com.rsmaxwell.mqtt.rpc.requestor;
 
+import java.util.Map;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -82,22 +84,23 @@ public class CalculatorRequest {
 		rpc.subscribeToResponseTopic();
 
 		// Make a request
-		Request request = new Request("calculator");
-		request.put("operation", operation);
-		request.put("param1", param1);
-		request.put("param2", param2);
-
+		Request request = new Request("calculator",
+		        Map.of(
+		                "operation", operation,
+		                "param1", param1,
+		                "param2", param2));		
+		
 		// Send the request as a json string
 		byte[] bytes = mapper.writeValueAsBytes(request);
 		Token token = rpc.request(requestTopic, bytes);
 
 		// Wait for the response to arrive
 		Response response = token.waitForResponse();
-		Status status = response.getStatus();
+		Status status = response.status();
 
 		// Handle the response
 		if (status.isOk()) {
-			Integer result = (Integer) response.getPayload();
+			Integer result = (Integer) response.payload();
 			logger.info(String.format("payload: %d", result));
 		} else {
 			logger.info(String.format("status: %s", status.toString()));

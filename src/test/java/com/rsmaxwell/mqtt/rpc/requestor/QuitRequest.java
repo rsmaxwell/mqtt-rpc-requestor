@@ -1,5 +1,7 @@
 package com.rsmaxwell.mqtt.rpc.requestor;
 
+import java.util.Map;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -70,16 +72,15 @@ public class QuitRequest {
 		rpc.subscribeToResponseTopic();
 
 		// Make a request
-		Request request = new Request("quit");
-		request.put("quit", true);
-
+		Request request = new Request("calculator", Map.of("quit", true));		
+		
 		// Send the request as a json string
 		byte[] bytes = mapper.writeValueAsBytes(request);
 		Token token = rpc.request(requestTopic, bytes);
 
 		// Wait for the response to arrive
 		Response response = token.waitForResponse();
-		Status status = response.getStatus();
+		Status status = response.status();
 
 		// Handle the response
 		if (status.isOk()) {
